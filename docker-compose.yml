@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  echo-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - oathkeeper-demo
+    environment:
+      - PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-O", "-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  oathkeeper:
+    image: oryd/oathkeeper:v0.40.6-distroless
+    depends_on:
+      - echo-server
+    ports:
+      - "4455:4455" # Proxy port
+      - "4456:4456" # API port
+    environment:
+      - LOG_LEVEL=debug
+    command: serve proxy -c /etc/config/oathkeeper/oathkeeper.yaml
+    volumes:
+      - ./config:/etc/config/oathkeeper
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - oathkeeper-demo
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-O", "-", "http://localhost:4456/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+networks:
+  oathkeeper-demo:
+    driver: bridge

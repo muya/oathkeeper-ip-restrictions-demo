@@ -1,0 +1,30 @@
+FROM golang:1.23-alpine AS builder
+
+WORKDIR /app
+
+# Copy go.mod if you have dependencies (not needed for this simple example)
+# COPY go.mod go.sum ./
+COPY go.mod ./
+RUN go mod download
+
+# Copy source code
+COPY main.go .
+
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -o echo-server .
+
+# Create a minimal production image
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /app
+
+# Copy the binary from the builder stage
+COPY --from=builder /app/echo-server .
+
+# Expose the port the server will run on
+EXPOSE 8080
+
+# Run the server
+CMD ["./echo-server"]

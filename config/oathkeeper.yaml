@@ -1,0 +1,65 @@
+serve:
+  proxy:
+    port: 4455
+    cors:
+      enabled: true
+      allowed_origins:
+        - "*"
+      allowed_methods:
+        - POST
+        - GET
+        - PUT
+        - PATCH
+        - DELETE
+      allowed_headers:
+        - Authorization
+        - Content-Type
+      exposed_headers:
+        - Content-Type
+      allow_credentials: true
+      debug: true
+  api:
+    port: 4456
+
+access_rules:
+  repositories:
+    - file:///etc/config/oathkeeper/rules.json
+
+errors:
+  fallback:
+    - json
+  handlers:
+    json:
+      enabled: true
+      config:
+        verbose: true
+
+authenticators:
+  oauth2_introspection:
+    enabled: true
+    config:
+      introspection_url: http://echo-server:8080/introspect
+      scope_strategy: exact
+      required_scope: []
+      pre_authorization:
+        enabled: false
+      introspection_request_headers:
+        Content-Type: application/json
+        Accept: application/json
+  noop:
+    enabled: true
+
+authorizers:
+  allow:
+    enabled: true
+
+mutators:
+  hydrator:
+    enabled: true
+  noop:
+    enabled: true
+
+# Log level for Oathkeeper
+log:
+  level: debug
+  format: json

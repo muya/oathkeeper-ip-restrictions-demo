@@ -1,0 +1,87 @@
+[
+  {
+    "id": "echo-server-host-docker-internal",
+    "upstream": {
+      "url": "http://echo-server:8080/echo"
+    },
+    "match": {
+      "url": "http://<0.0.0.0|.*>:4455/host-docker-internal",
+      "methods": [
+        "POST"
+      ]
+    },
+    "authenticators": [
+      {
+        "handler": "oauth2_introspection"
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "hydrator",
+        "config": {
+          "api": {
+            "url": "http://host.docker.internal:8080/echo"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "echo-server-direct",
+    "upstream": {
+      "url": "http://echo-server:8080/echo"
+    },
+    "match": {
+      "url": "http://<0.0.0.0|.*>:4455/direct",
+      "methods": [
+        "POST"
+      ]
+    },
+    "authenticators": [
+      {
+        "handler": "oauth2_introspection"
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "hydrator",
+        "config": {
+          "api": {
+            "url": "http://echo-server:8080/echo"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "fallback",
+    "upstream": {
+      "url": "http://echo-server:8080"
+    },
+    "match": {
+      "url": "http://<0.0.0.0|.*>:4455/<.*>",
+      "methods": [
+        "GET"
+      ]
+    },
+    "authenticators": [
+      {
+        "handler": "noop"
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "noop"
+      }
+    ]
+  }
+]
