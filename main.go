@@ -9,11 +9,17 @@ import (
 	"os"
 )
 
+type AuthenticationSession struct {
+	Subject string                 `json:"subject"`
+	Extra   map[string]interface{} `json:"extra"`
+	Header  http.Header            `json:"header"`
+}
+
 func main() {
 	// Get port from environment variable or use default
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "9090"
 	}
 
 	// Echo handler - echoes back whatever is POSTed to it
@@ -57,6 +63,40 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(response)
+	})
+
+	// Hydrator mutator endpoint
+	http.HandleFunc("/hydrate", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Received request to /hydrate from %s", r.RemoteAddr)
+
+		// Parse incoming request body into AuthenticatorSession struct
+
+		var authSession AuthenticationSession
+
+		if err := json.NewDecoder(r.Body).Decode(&authSession); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Error decoding request body: %v", err)
+			return
+		}
+
+		// Log the received body
+		log.Printf("Received body: %v", authSession)
+
+		// Hydrate the response: add permission to the extra field
+		extraContent := map[string]interface{}{
+			"permissions": "p1, p2",
+		}
+		authSession.Extra = extraContent
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(authSession); err != nil {
+			log.Printf("Error encoding response: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			log.Printf("Response: %v", authSession)
+
+		}
 	})
 
 	// Health check endpoint

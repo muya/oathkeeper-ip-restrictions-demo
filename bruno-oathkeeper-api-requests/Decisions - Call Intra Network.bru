@@ -1,0 +1,17 @@
+meta {
+  name: Decisions - Call Intra Network
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://127.0.0.1:4456/decisions/intra-docker
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "hello": "world"
+  }
+}

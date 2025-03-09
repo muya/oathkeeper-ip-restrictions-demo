@@ -4,13 +4,13 @@ services:
   echo-server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-backend
     ports:
-      - "8080:8080"
+      - "9090:9090"
     networks:
       - oathkeeper-demo
     environment:
-      - PORT=8080
+      - PORT=9090
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-O", "-", "http://localhost:8080/health"]
@@ -24,15 +24,10 @@ services:
     depends_on:
       - echo-server
     ports:
-      - "4455:4455" # Proxy port
       - "4456:4456" # API port
-    environment:
-      - LOG_LEVEL=debug
-    command: serve proxy -c /etc/config/oathkeeper/oathkeeper.yaml
+    command: serve api -c /etc/config/oathkeeper/config.yaml
     volumes:
-      - ./config:/etc/config/oathkeeper
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - ./:/etc/config/oathkeeper
     networks:
       - oathkeeper-demo
     restart: unless-stopped
@@ -42,6 +37,25 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
+
+  traefik:
+    image: traefik:v2.9
+    ports:
+      - "7000:80"      # HTTP Port (Set header "Host: echo-server" to request)
+      # - "8080:8080"  # Admin Port
+      # - "443:443"    # HTTPS Port
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--providers.docker"
+      - "--api.insecure=true"
+      - "--log.level=DEBUG"
+      - "--accesslog"
+    labels:
+      - traefik.http.middlewares.oathkeeper.forwardauth.address=http://oathkeeper:4456/decisions 
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - oathkeeper-demo
 
 networks:
   oathkeeper-demo:

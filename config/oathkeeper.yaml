@@ -1,6 +1,6 @@
 serve:
-  proxy:
-    port: 4455
+  api:
+    port: 4456
     cors:
       enabled: true
       allowed_origins:
@@ -18,12 +18,10 @@ serve:
         - Content-Type
       allow_credentials: true
       debug: true
-  api:
-    port: 4456
 
 access_rules:
   repositories:
-    - file:///etc/config/oathkeeper/rules.json
+    - file:///etc/config/oathkeeper/rules.yaml
 
 errors:
   fallback:
@@ -56,6 +54,12 @@ authorizers:
 mutators:
   hydrator:
     enabled: true
+    config:
+      api:
+        url: http://echo-server:8080/introspect
+        retry:
+          give_up_after: 2s
+          max_delay: 300ms
   noop:
     enabled: true
 

@@ -1,0 +1,17 @@
+meta {
+  name: Hydrate Backend
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://127.0.0.1:9090/hydrate
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "hello": "world"
+  }
+}

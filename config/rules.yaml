@@ -1,0 +1,31 @@
+- id: echo-server-host-docker-internal
+  match:
+    url: 'http://localhost:8080/test-path'
+    methods:
+      - POST
+  authenticators:
+    - handler: oauth2_introspection
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: hydrator
+      config:l
+        api:
+          url: 'http://host.docker.internal:8080/echo'
+- id: echo-server-direct
+  match:
+    url: 'http://localhost:8080/test-path'
+    methods:
+      - POST
+  authenticators:
+    - handler: oauth2_introspection
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: hydrator
+      config:
+        api:
+          url: 'http://echo-server:8080/echo'
+          retry:
+            give_up_after: 2s
+            max_delay: 300ms

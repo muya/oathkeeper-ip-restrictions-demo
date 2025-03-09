@@ -60,21 +60,19 @@ docker-compose ps
 ### Test Case 1: Hydrator Mutator with Direct Service Access (This Should Work)
 
 ```bash
-curl -X POST http://localhost:4455/direct \
+curl -X GET http://localhost:4456/decisions?id=echo-server-direct \
   -H "Authorization: Bearer token" \
-  -H "Content-Type: application/json" \
-  -d '{"test":"data"}'
+  -H "Content-Type: application/json"
 ```
 
-Expected result: The echo server should receive the request and echo back the JSON data.
+Expected result: Oathkeeper should respond with a decision and you should see the echo server being called in the logs.
 
 ### Test Case 2: Hydrator Mutator with Host Docker Internal (This Should Fail)
 
 ```bash
-curl -X POST http://localhost:4455/host-docker-internal \
+curl -X GET http://localhost:4456/decisions?id=echo-server-host-docker-internal \
   -H "Authorization: Bearer token" \
-  -H "Content-Type: application/json" \
-  -d '{"test":"data"}'
+  -H "Content-Type: application/json"
 ```
 
 Expected result: The request should fail with an error message in the Oathkeeper logs about prohibited IP address.
