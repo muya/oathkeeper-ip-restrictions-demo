@@ -1,67 +1,6 @@
-- id: allow-anonymous-with-header-mutator
-  version: v0.40.9
-  upstream:
-    url: 'https://httpbin.org/anything/header'
-  match:
-    url: 'http://<127.0.0.1|localhost>:4455/anything/header'
-    methods:
-      - GET
-  authenticators:
-    - handler: anonymous
-  authorizer:
-    handler: allow
-  mutators:
-    - handler: header
-      config:
-        headers:
-          X-User: '{{ print .Subject }}'
-- id: deny-anonymous
-  version: v0.40.9
-  upstream:
-    url: 'https://httpbin.org/anything/deny'
-  match:
-    url: 'http://<127.0.0.1|localhost>:4455/anything/deny'
-    methods:
-      - GET
-  authenticators:
-    - handler: anonymous
-  authorizer:
-    handler: deny
-  mutators:
-    - handler: noop
-  errors:
-    - handler: json
-      config:
-        when:
-          - request:
-              header:
-                accept:
-                  - application/json
-    - handler: redirect
-      config:
-        when:
-          - request:
-              header:
-                accept:
-                  - text/*
-- id: allow-anonymous-with-id-token-mutator
-  version: v0.40.9
-  upstream:
-    url: 'https://httpbin.org/anything/id_token'
-  match:
-    url: 'http://<127.0.0.1|localhost>:4455/anything/id_token'
-    methods:
-      - GET
-  authenticators:
-    - handler: anonymous
-  authorizer:
-    handler: allow
-  mutators:
-    - handler: id_token
-
 - id: test-ip-restriction-intra-docker-api-call
   match:
-    url: 'http://<127.0.0.1|localhost>:4456/intra-docker'
+    url: 'http://<127.0.0.1|localhost>:<4456|7456|8456>/intra-docker'
     methods:
       - GET
       - POST
@@ -82,7 +21,7 @@
 
 - id: test-ip-restriction-host-network-api-call
   match:
-    url: 'http://<127.0.0.1|localhost>:4456/host-call'
+    url: 'http://<127.0.0.1|localhost>:<4456|7456|8456>/host-call'
     methods:
       - GET
       - POST
@@ -94,7 +33,7 @@
     - handler: hydrator
       config:
         api:
-          url: http://host.docker.internal:3005/hydrate
+          url: http://host.docker.internal:9090/hydrate
           retry:
             give_up_after: 2s
             max_delay: 100ms
